@@ -1,5 +1,6 @@
 package com.social.demo.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -16,7 +17,8 @@ public class SocialProfile {
 
     @OneToOne
     @JoinColumn(name = "social_user")
-    private SocialUser User;
+    @JsonIgnore
+    private SocialUser user;
 
     public Long getId() {
         return id;
@@ -27,10 +29,11 @@ public class SocialProfile {
     }
 
     public SocialUser getUser() {
-        return User;
+        return user;
     }
 
     public void setUser(SocialUser user) {
-        User = user;
+        this.user = user;
     }
+
 }

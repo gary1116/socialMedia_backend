@@ -569,3 +569,150 @@ Owning side → decides foreign keys / join tables
 
 @Controller
 → Component that handles web requests
+
+
+# What is cascading?
+
+Cascading means: “Do the same database operation to related objects automatically.”
+
+That’s it.
+Without cascading (what you’re doing now)
+
+    You do this manually:
+    
+    userRepository.save(user);
+    postRepository.save(post);
+    profileRepository.save(profile);
+    
+    
+    You are saying:
+    
+    “Save user, then save everything related one by one.”
+
+With cascading
+
+    You do this:
+    userRepository.save(user);
+    
+    And Spring/JPA automatically:
+    
+    saves the profile
+    saves the posts
+    updates join tables
+    Because you told it:
+    “When I save/delete this object, apply the same operation to its related objects.”
+
+*****TYPES OF CASCADING*****
+
+1️⃣ CascadeType.PERSIST
+When you save the parent, the child is also saved.
+@OneToMany(cascade = CascadeType.PERSIST)
+userRepository.save(user); // saves posts too
+
+Use when:
+Child should be created only with parent
+
+2️⃣ CascadeType.MERGE
+When you update the parent, the child is also updated.
+@OneToMany(cascade = CascadeType.MERGE)
+user.setName("New Name");
+userRepository.save(user); // updates children
+
+
+Use when:
+You edit child data via parent
+
+3️⃣ CascadeType.REMOVE
+When you delete the parent, the child is also deleted.
+@OneToMany(cascade = CascadeType.REMOVE)
+userRepository.delete(user); // deletes posts too
+
+
+⚠️ Dangerous if children are shared.
+
+4️⃣ CascadeType.REFRESH
+When parent is refreshed from DB, children are refreshed too.
+@OneToMany(cascade = CascadeType.REFRESH)
+
+
+Use when:
+You want latest DB state for children
+
+5️⃣ CascadeType.DETACH
+When parent is detached from persistence context, children are detached too.
+@OneToMany(cascade = CascadeType.DETACH)
+
+
+Use when:
+You manually manage entity states
+
+6️⃣ CascadeType.ALL
+Does everything above (PERSIST, MERGE, REMOVE, REFRESH, DETACH).
+@OneToMany(cascade = CascadeType.ALL)
+
+
+Most common choice.
+
+Relationship	Recommended cascade
+One-to-One (User → Profile)	ALL
+One-to-Many (User → Post)	ALL
+Many-to-Many (User ↔ Groups)	❌ Avoid REMOVE
+
+
+
+hich cascade runs on which operation
+✅ CascadeType.PERSIST
+
+Triggers when you create/save a NEW parent (persist)
+
+✅ child is inserted too
+
+❌ does not delete child
+
+When it happens: entityManager.persist(parent) (and usually repo.save(parent) for new entities)
+
+✅ CascadeType.MERGE
+
+Triggers when you update/attach an existing parent (merge)
+
+✅ child is updated/merged too
+
+❌ does not delete child
+
+When it happens: entityManager.merge(parent) (often repo.save(parent) when parent already has an id)
+
+✅ CascadeType.REMOVE
+
+Triggers when you delete the parent
+
+✅ child is deleted too
+
+❌ does not save/update child
+
+When it happens: entityManager.remove(parent) / repo.delete(parent)
+
+✅ CascadeType.REFRESH
+
+Triggers when you refresh parent from DB
+
+✅ child is refreshed too
+
+❌ no save/update/delete
+
+When it happens: entityManager.refresh(parent)
+
+✅ CascadeType.DETACH
+
+Triggers when you detach parent from persistence context
+
+✅ child becomes detached too
+
+❌ no save/update/delete
+
+When it happens: entityManager.detach(parent) (less common in Spring apps)
+
+✅ CascadeType.ALL
+
+Includes: PERSIST + MERGE + REMOVE + REFRESH + DETACH
+
+So: save + update + delete + refresh + detach all cascade.

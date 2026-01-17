@@ -18,7 +18,17 @@ public class SocialService {
     }
 
     public SocialUser saveUser(SocialUser socialUser) {
+        // 🔑 ensure owning side of OneToOne is set
+        if (socialUser.getSocialProfile() != null) {
+            socialUser.getSocialProfile().setUser(socialUser);
+        }
             return socialUserRepository.save(socialUser);
     }
 
+    public SocialUser delete(Long id) {
+        SocialUser socialUser=socialUserRepository.findById(id)
+                .orElseThrow(()->new RuntimeException("User not found"));
+         socialUserRepository.delete(socialUser);
+         return socialUser;
+    }
 }

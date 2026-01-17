@@ -4,10 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @AllArgsConstructor
@@ -18,7 +15,7 @@ public class SocialUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(mappedBy = "User")
+    @OneToOne(mappedBy = "user",cascade = CascadeType.ALL)
     private SocialProfile socialProfile;
 
     @OneToMany(mappedBy = "socialUser")
@@ -49,6 +46,17 @@ public class SocialUser {
         this.socialProfile = socialProfile;
     }
 
+    public void linkProfile(SocialProfile profile) {
+        this.socialProfile = profile;
+        if (profile != null) {
+            profile.setUser(this); // owning side gets set
+        }
+    }
+    @Override
+    public int hashCode(){
+        return Objects.hash(id);
+    }
+
     public List<Post> getPost() {
         return post;
     }
@@ -64,4 +72,7 @@ public class SocialUser {
     public void setGroups(Set<Groups> groups) {
         this.groups = groups;
     }
+
+
+
 }
